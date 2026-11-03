@@ -732,7 +732,7 @@
   const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 
   // Secure Apps Script web app (Vector Google account). Paste the /exec URL after deploy.
-  const LEAD_ENDPOINT = "REPLACE_WITH_WEB_APP_URL";
+  const LEAD_ENDPOINT = "https://script.google.com/macros/s/AKfycbxPiaO30VoTH0_JMrC9Wzewx_ad3e9UQFGX_3CinkyPn1A7bYpuzND71jxDawbduA0hYA/exec";
   const PAGE_LOADED_AT = Date.now();
 
   function centralTimestamp() {
@@ -773,7 +773,7 @@
   function postLead(fields) {
     const hp = $("#company_website");
     if (hp && hp.value) return; // honeypot tripped — skip client-side too
-    if (!LEAD_ENDPOINT || LEAD_ENDPOINT === "REPLACE_WITH_WEB_APP_URL") return;
+    if (!LEAD_ENDPOINT) return;
     const bodyObj = {
       name: fields.name,
       phone: fields.phone,
@@ -796,7 +796,8 @@
     try {
       fetch(LEAD_ENDPOINT, {
         method: "POST",
-        mode: "no-cors",
+        mode: "cors",
+        redirect: "follow",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(bodyObj)
       }).catch(function () {});
@@ -1006,10 +1007,10 @@
   }
 
   function goThanks() {
-    const payload = buildPayload();
+    const payload = state.lastPayload || buildPayload();
     state.lastPayload = payload;
     const fields = buildWebhookFields(payload);
-    postLead(fields);
+    // Lead already sent at the price-unlock gate; do not post again.
 
     $("#thanksName").textContent = state.lead.fullName.split(" ")[0] || "there";
     $("#thanksSummary").innerHTML =
@@ -1048,6 +1049,11 @@
   $("#leadForm").addEventListener("submit", function (e) {
     e.preventDefault();
     if (!validateLead()) return;
+    // Capture the lead when prices unlock (lead gate). Fire-and-forget.
+    state.prices = computePrices();
+    const payload = buildPayload();
+    state.lastPayload = payload;
+    postLead(buildWebhookFields(payload));
     renderReveal();
     showStep(6);
   });
