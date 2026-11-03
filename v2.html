@@ -574,7 +574,7 @@
         </div>
         <div class="hp" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
           <label for="company_website">Company website</label>
-          <input id="company_website" name="company_website" type="text" tabindex="-1" autocomplete="off" />
+          <input id="company_website" name="company_website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
         </div>
         <p class="privacy">By continuing, you agree Vector Services may call or text you about your estimate. Msg &amp; data rates may apply. Demo estimate — example prices only.</p>
         <div class="nav" style="margin-top:4px">
@@ -731,9 +731,9 @@
   const $ = (sel, root) => (root || document).querySelector(sel);
   const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 
-  // Demo intake endpoint (public by design for this demo page).
-  const LEAD_WEBHOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScY_XZyQSBNPkpW45NM4JDu7DZcGq9EIMJfU1ymYmsqfnyt-w/formResponse";
-  const FORM_ENTRIES = {submitted:"entry.1430615835",name:"entry.617581573",phone:"entry.173025639",email:"entry.1818395266",zip:"entry.689663138",home_size:"entry.1967353794",fuel:"entry.1711226551",situation:"entry.1034177521",add_ons:"entry.660414290",good_range:"entry.5916950",better_range:"entry.1763725178",best_range:"entry.264563814",source:"entry.1951331473"};
+  // Secure Apps Script web app (Vector Google account). Paste the /exec URL after deploy.
+  const LEAD_ENDPOINT = "REPLACE_WITH_WEB_APP_URL";
+  const PAGE_LOADED_AT = Date.now();
 
   function centralTimestamp() {
     try {
@@ -772,23 +772,34 @@
 
   function postLead(fields) {
     const hp = $("#company_website");
-    if (hp && hp.value) return; // honeypot tripped — skip
-    if (!LEAD_WEBHOOK_URL) return;
-    const mapped = {};
-    Object.keys(fields).forEach(function (k) { if (FORM_ENTRIES[k]) mapped[FORM_ENTRIES[k]] = fields[k] == null ? "" : String(fields[k]); });
-    const body = new URLSearchParams(mapped).toString();
+    if (hp && hp.value) return; // honeypot tripped — skip client-side too
+    if (!LEAD_ENDPOINT || LEAD_ENDPOINT === "REPLACE_WITH_WEB_APP_URL") return;
+    const bodyObj = {
+      name: fields.name,
+      phone: fields.phone,
+      email: fields.email,
+      zip: fields.zip,
+      home_size: fields.home_size,
+      fuel: fields.fuel,
+      situation: fields.situation,
+      add_ons: fields.add_ons,
+      good_range: fields.good_range,
+      better_range: fields.better_range,
+      best_range: fields.best_range,
+      source: fields.source,
+      submitted: fields.submitted,
+      elapsed_ms: Date.now() - PAGE_LOADED_AT,
+      company_website: hp ? hp.value : ""
+    };
+    // text/plain + no-cors avoids CORS preflight; Apps Script still receives the body.
+    // Never block the price reveal on network success/failure.
     try {
-      if (false) {
-        const blob = new Blob([body], { type: "application/x-www-form-urlencoded" });
-        navigator.sendBeacon(LEAD_WEBHOOK_URL, blob);
-      } else {
-        fetch(LEAD_WEBHOOK_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body
-        }).catch(function () {});
-      }
+      fetch(LEAD_ENDPOINT, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(bodyObj)
+      }).catch(function () {});
     } catch (err) {
       // Fire-and-forget: UI continues either way
     }
