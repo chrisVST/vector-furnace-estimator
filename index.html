@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Furnace Price Estimator | Vector Services (Demo)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png" />
+  <link rel="apple-touch-icon" href="apple-touch.png" />
+  <meta name="theme-color" content="#003865" />
+  <style>
+    :root {
+      /* Vector Services brand — from brand logo guide */
+      --navy: #003865;
+      --royal: #0077C8;
+      --sky: #00A9E0;
+      --gold: #D29F13;
+      --yellow: #F1C400;
+      --bg: #f2f7fb;
+      --card: #ffffff;
+      --ink: #003865;
+      --muted: #4a657a;
+      --line: #d5e3ef;
+      --brand: #0077C8;
+      --brand-dark: #003865;
+      --brand-soft: #e5f5fc;
+      --good: #0077C8;
+      --better: #003865;
+      --best: #D29F13;
+      --warn: #8a5a00;
+      --warn-bg: #fff8e6;
+      --danger: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 28px rgba(0, 56, 101, 0.10);
+      --font: "Exo 2", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background:
+        radial-gradient(1200px 420px at 50% -80px, rgba(0, 169, 224, 0.18), transparent 60%),
+        linear-gradient(180deg, #e8f4fb 0%, var(--bg) 42%, #e6eef5 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .demo-banner {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--warn-bg);
+      color: var(--warn);
+      border-bottom: 1px solid #f0d48a;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 12px;
+      letter-spacing: 0.01em;
+    }
+
+    .shell {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 16px 14px 40px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .brand-logo {
+      height: 52px;
+      width: auto;
+      max-width: 170px;
+      display: block;
+      flex-shrink: 0;
+    }
+    .brand-text {
+      min-width: 0;
+      border-left: 2px solid rgba(0, 169, 224, 0.45);
+      padding-left: 12px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--navy);
+    }
+    .brand p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .progress-wrap {
+      margin-bottom: 14px;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 7px;
+      background: #d3e4f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--royal) 45%, var(--yellow) 100%);
+      border-radius: 999px;
+      transition: width 0.28s ease;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 18px 18px;
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: linear-gradient(90deg, var(--navy), var(--royal) 50%, var(--yellow));
+    }
+
+    .step { display: none; }
+    .step.active { display: block; animation: fadeIn 0.22s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand);
+      margin: 0 0 8px;
+    }
+    .question {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+    .hint {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 14px;
+      font: inherit;
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .option:hover { border-color: #7eb8e0; background: #f3faff; }
+    .option.selected {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+      box-shadow: 0 0 0 1px var(--brand) inset;
+    }
+    .option .radio, .option .check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #9aa8b8;
+      flex-shrink: 0;
+      margin-top: 1px;
+      background: #fff;
+    }
+    .option .radio { border-radius: 50%; }
+    .option .check { border-radius: 6px; }
+    .option.selected .radio,
+    .option.selected .check {
+      border-color: var(--brand);
+      background: var(--brand);
+      box-shadow: inset 0 0 0 3px #fff;
+    }
+    .option.selected .check {
+      box-shadow: none;
+      position: relative;
+    }
+    .option.selected .check::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 5px;
+      height: 10px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .option .label-wrap { flex: 1; min-width: 0; }
+    .option .label { font-weight: 600; font-size: 15px; display: block; }
+    .option .sub { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 11px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 13px 16px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn-primary {
+      background: linear-gradient(180deg, #0a84d6 0%, var(--royal) 100%);
+      color: #fff;
+      flex: 1;
+      box-shadow: 0 6px 14px rgba(0, 119, 200, 0.28);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, var(--royal) 0%, var(--navy) 100%);
+    }
+    .btn-ghost {
+      background: #eaf2f8;
+      color: var(--navy);
+      min-width: 88px;
+    }
+    .btn-ghost:hover:not(:disabled) { background: #dceaf4; }
+    .btn-block { width: 100%; }
+
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 12px;
+      font: inherit;
+      font-size: 16px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus {
+      border-color: var(--royal);
+      box-shadow: 0 0 0 3px rgba(0, 119, 200, 0.18);
+    }
+    .field input.invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.1);
+    }
+    .error {
+      display: none;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--danger);
+    }
+    .error.show { display: block; }
+    .privacy {
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tier-cards {
+      display: grid;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .tier {
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .tier.recommended {
+      border-color: var(--royal);
+      box-shadow: 0 0 0 1px var(--royal) inset, 0 8px 22px rgba(0, 119, 200, 0.12);
+    }
+    .tier .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 8px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    .tier.good .badge { background: #e5f5fc; color: var(--royal); }
+    .tier.better .badge { background: #e8eef4; color: var(--navy); }
+    .tier.best .badge { background: #fff6d6; color: #8a6800; }
+    .tier h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+    .tier .spec {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .tier .price {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .tier .price-note {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .rec-pill {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: linear-gradient(135deg, var(--yellow), var(--gold));
+      color: var(--navy);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+
+    .disclaimer {
+      margin: 14px 0 0;
+      padding: 12px;
+      background: #f0f7fb;
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .example-tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--warn);
+      background: var(--warn-bg);
+      border: 1px solid #f0d48a;
+      border-radius: 999px;
+      padding: 3px 8px;
+    }
+
+    .summary {
+      margin: 0 0 14px;
+      padding: 12px;
+      background: #f0f7fb;
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .summary strong { color: var(--ink); }
+
+    .thanks-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #e5f5fc, #fff6d6);
+      color: var(--royal);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      margin: 4px auto 14px;
+      border: 2px solid rgba(0, 169, 224, 0.35);
+    }
+    .thanks h2 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 22px;
+    }
+    .thanks p.lead {
+      margin: 0 0 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    details.payload {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafbfc;
+      overflow: hidden;
+    }
+    details.payload summary {
+      cursor: pointer;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      list-style: none;
+    }
+    details.payload summary::-webkit-details-marker { display: none; }
+    details.payload summary::after {
+      content: "Show";
+      float: right;
+      color: var(--brand);
+      font-weight: 600;
+    }
+    details.payload[open] summary::after { content: "Hide"; }
+    details.payload pre {
+      margin: 0;
+      padding: 0 14px 14px;
+      font-size: 11px;
+      line-height: 1.4;
+      overflow: auto;
+      color: #334155;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    @media (min-width: 480px) {
+      .shell { padding-top: 22px; }
+      .question { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-banner">Demo – example prices only · Not Vector Services’ real pricing</div>
+
+  <div class="shell">
+    <div class="brand">
+      <img class="brand-logo" src="vector-logo.png" srcset="vector-logo.png 1x, vector-logo@2x.png 2x" width="160" height="64" alt="Vector Heating Cooling Plumbing Electrical" />
+      <div class="brand-text">
+        <h1>Instant Furnace Price</h1>
+        <p>Twin Cities, MN · Demo</p>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-meta">
+        <span id="progressLabel">Step 1 of 6</span>
+        <span id="progressPct">17%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <!-- STEP 1: Home size -->
+    <section class="card step active" data-step="1" id="step-1">
+      <p class="eyebrow">Your home</p>
+      <h2 class="question">About how big is your home?</h2>
+      <p class="hint">We’ll use square footage to size the furnace range.</p>
+      <div class="options" id="sizeOptions"></div>
+      <div class="nav">
+        <button type="button" class="btn btn-primary" id="next-1" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: Fuel -->
+    <section class="card step" data-step="2" id="step-2">
+      <p class="eyebrow">Fuel type</p>
+      <h2 class="question">What fuel does your furnace use?</h2>
+      <p class="hint">Or what fuel do you want for a new system?</p>
+      <div class="options" id="fuelOptions"></div>
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" data-back="1">Back</button>
+        <button type="button" class="btn btn-primary" id="next-2" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Situation -->
+    <section class="card step" data-step="3" id="step-3">
+      <p class="eyebrow">Your situation</p>
+      <h2 class="question">What’s happening with your furnace?</h2>
+      <p class="hint">This helps our team prioritize your estimate. It doesn’t change the price range.</p>
+      <div class="options" id="situationOptions"></div>
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" data-back="2">Back</button>
+        <button type="button" class="btn btn-primary" id="next-3" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Add-ons -->
+    <section class="card step" data-step="4" id="step-4">
+      <p class="eyebrow">Optional upgrades</p>
+      <h2 class="question">Any add-ons you want included?</h2>
+      <p class="hint">Select all that apply — or skip if you’re not sure.</p>
+      <div class="options" id="addonOptions"></div>
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" data-back="3">Back</button>
+        <button type="button" class="btn btn-primary" id="next-4">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: Lead gate -->
+    <section class="card step" data-step="5" id="step-5">
+      <p class="eyebrow">Almost there</p>
+      <h2 class="question">Where should we send your price?</h2>
+      <p class="hint">Your personalized Good / Better / Best ranges unlock after this step.</p>
+      <form id="leadForm" class="form-grid" novalidate>
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input id="fullName" name="fullName" autocomplete="name" placeholder="Jane Doe" required />
+          <div class="error" id="err-fullName">Please enter your name.</div>
+        </div>
+        <div class="field">
+          <label for="phone">Mobile phone</label>
+          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-0100" required />
+          <div class="error" id="err-phone">Enter a valid 10-digit U.S. mobile number.</div>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@email.com" required />
+          <div class="error" id="err-email">Enter a valid email address.</div>
+        </div>
+        <div class="field">
+          <label for="zip">ZIP code</label>
+          <input id="zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="12345" maxlength="10" required />
+          <div class="error" id="err-zip">Enter a valid 5-digit ZIP.</div>
+        </div>
+        <div class="hp" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+          <label for="company_website">Company website</label>
+          <input id="company_website" name="company_website" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+        <p class="privacy">By continuing, you agree Vector Services may call or text you about your estimate. Msg &amp; data rates may apply. Demo estimate — example prices only.</p>
+        <div class="nav" style="margin-top:4px">
+          <button type="button" class="btn btn-ghost" data-back="4">Back</button>
+          <button type="submit" class="btn btn-primary" id="next-5">See my prices</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- STEP 6: Reveal -->
+    <section class="card step" data-step="6" id="step-6">
+      <p class="eyebrow">Your estimate</p>
+      <h2 class="question">Your installed furnace ranges</h2>
+      <p class="hint">Good / Better / Best based on your answers. Final price confirmed at a free in-home visit.</p>
+      <div class="summary" id="revealSummary"></div>
+      <div class="tier-cards" id="tierCards"></div>
+      <p class="disclaimer">
+        Ranges are <strong>installed retail</strong> estimates for Twin Cities homes and include typical labor and basic materials.
+        Estimates only — final price is confirmed after a free in-home visit.
+        Permits, haul-away, ductwork changes, electrical upgrades, and complex installs may change the final number.
+        CenterPoint Energy furnace rebates of $200–$1,000 may apply depending on efficiency.
+        <span class="example-tag">Demo – example prices</span>
+      </p>
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" data-back="5">Back</button>
+        <button type="button" class="btn btn-primary" id="bookBtn">Book my free in-home estimate</button>
+      </div>
+    </section>
+
+    <!-- STEP 7: Thank you -->
+    <section class="card step thanks" data-step="7" id="step-7">
+      <div class="thanks-icon">✓</div>
+      <h2>You’re on the list</h2>
+      <p class="lead">Thanks, <span id="thanksName">there</span>. A Vector Services advisor will follow up to confirm your quote and schedule your free in-home estimate.</p>
+      <div class="summary" id="thanksSummary"></div>
+      <button type="button" class="btn btn-primary btn-block" id="restartBtn">Start over (demo)</button>
+      <details class="payload">
+        <summary>Lead summary</summary>
+        <pre id="payloadPreview"></pre>
+      </details>
+      <p class="footer-note">Demo · Example prices · Lead captured for follow-up</p>
+    </section>
+  </div>
+
+  <script>
+  /* =============================================================================
+     PRICING CONFIG — PLACEHOLDER / EXAMPLE NUMBERS ONLY
+     Swap these with Vector Services' real installed retail ranges.
+     All dollar amounts are in USD. Ranges are [low, high] inclusive.
+     ============================================================================= */
+  const PRICING = {
+    // Base installed retail ranges by home size key and tier (Good / Better / Best)
+    // Twin Cities demo placeholders (natural gas, mid-size ~1,500–2,500 sq ft baseline).
+    // Good  = ~92–95% AFUE single-stage (MN replacements often require 90%+)
+    // Better = ~96% AFUE two-stage
+    // Best  = ~97–98% AFUE variable-speed modulating
+    // Size adj: under 1,500 ≈ −5%; 2,500–3,500 ≈ +10%; 3,500+ ≈ +20%
+    baseBySize: {
+      under_1500: {
+        good:   [3800, 5700],
+        better: [4750, 7600],
+        best:   [6650, 11400]
+      },
+      "1500_2500": {
+        good:   [4000, 6000],
+        better: [5000, 8000],
+        best:   [7000, 12000]
+      },
+      "2500_3500": {
+        good:   [4400, 6600],
+        better: [5500, 8800],
+        best:   [7700, 13200]
+      },
+      over_3500: {
+        good:   [4800, 7200],
+        better: [6000, 9600],
+        best:   [8400, 14400]
+      }
+    },
+
+    // Added to both low and high of every tier for the selected fuel
+    fuelAdjust: {
+      natural_gas: 0,
+      propane: 500,    // ~5–10% uplift vs natural gas baseline
+      electric: -1500  // electric furnace installs typically lower upfront
+    },
+
+    // Flat amount added to both low and high when the add-on is selected
+    // Midpoints of Twin Cities published accessory ranges (demo only)
+    addOns: {
+      smart_thermostat: 490,
+      labor_warranty_10yr: 650,
+      air_purifier: 1200,
+      humidifier: 850
+    },
+
+    // Labels for UI (not prices)
+    labels: {
+      sizes: {
+        under_1500: { label: "Under 1,500 sq ft", sub: "Smaller homes & townhomes" },
+        "1500_2500": { label: "1,500 – 2,500 sq ft", sub: "Most Twin Cities homes" },
+        "2500_3500": { label: "2,500 – 3,500 sq ft", sub: "Larger two-story homes" },
+        over_3500: { label: "3,500+ sq ft", sub: "Large homes or multi-zone" }
+      },
+      fuels: {
+        natural_gas: { label: "Natural gas", sub: "Most common in the Twin Cities" },
+        propane: { label: "Propane", sub: "Common outside city gas lines" },
+        electric: { label: "Electric", sub: "Usually supplemental — not ideal as primary heat in MN" }
+      },
+      situations: {
+        not_working: { label: "Furnace isn’t working", sub: "Need help soon" },
+        old_replace: { label: "It’s old — I want to replace it", sub: "Planning ahead" },
+        new_construction: { label: "New construction or addition", sub: "Building or expanding" }
+      },
+      addOns: {
+        smart_thermostat: { label: "Smart thermostat", sub: "Example +$490" },
+        labor_warranty_10yr: { label: "10-year labor warranty", sub: "Example +$650" },
+        air_purifier: { label: "Air purifier / filtration", sub: "Example +$1,200" },
+        humidifier: { label: "Whole-home humidifier", sub: "Example +$850" }
+      },
+      tiers: {
+        good: {
+          name: "Good",
+          title: "Reliable & efficient",
+          spec: "92–95% AFUE · Single-stage"
+        },
+        better: {
+          name: "Better",
+          title: "Quieter & more efficient",
+          spec: "96% AFUE · Two-stage"
+        },
+        best: {
+          name: "Best",
+          title: "Ultimate comfort",
+          spec: "97–98% AFUE · Variable-speed modulating"
+        }
+      }
+    }
+  };
+
+  /* ----- App state ----- */
+  const state = {
+    step: 1,
+    totalSteps: 6, // progress counts through reveal; thank-you hides bar
+    size: null,
+    fuel: null,
+    situation: null,
+    addOns: [],
+    lead: { fullName: "", phone: "", email: "", zip: "" },
+    prices: null,
+    lastPayload: null
+  };
+
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+  // Demo intake endpoint (public by design for this demo page).
+  const LEAD_WEBHOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScY_XZyQSBNPkpW45NM4JDu7DZcGq9EIMJfU1ymYmsqfnyt-w/formResponse";
+  const FORM_ENTRIES = {submitted:"entry.1430615835",name:"entry.617581573",phone:"entry.173025639",email:"entry.1818395266",zip:"entry.689663138",home_size:"entry.1967353794",fuel:"entry.1711226551",situation:"entry.1034177521",add_ons:"entry.660414290",good_range:"entry.5916950",better_range:"entry.1763725178",best_range:"entry.264563814",source:"entry.1951331473"};
+
+  function centralTimestamp() {
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      }).format(new Date()) + " CT";
+    } catch (err) {
+      return new Date().toISOString();
+    }
+  }
+
+  function buildWebhookFields(payload) {
+    return {
+      submitted: centralTimestamp(),
+      name: payload.contact.fullName,
+      phone: payload.contact.phone,
+      email: payload.contact.email,
+      zip: payload.contact.zip,
+      home_size: payload.answers.homeSizeLabel,
+      fuel: payload.answers.fuelLabel,
+      situation: payload.answers.situationLabel,
+      add_ons: payload.answers.addOnLabels.length ? payload.answers.addOnLabels.join(", ") : "None",
+      good_range: payload.estimate.goodLabel,
+      better_range: payload.estimate.betterLabel,
+      best_range: payload.estimate.bestLabel,
+      source: payload.source
+    };
+  }
+
+  function postLead(fields) {
+    const hp = $("#company_website");
+    if (hp && hp.value) return; // honeypot tripped — skip
+    if (!LEAD_WEBHOOK_URL) return;
+    const mapped = {};
+    Object.keys(fields).forEach(function (k) { if (FORM_ENTRIES[k]) mapped[FORM_ENTRIES[k]] = fields[k] == null ? "" : String(fields[k]); });
+    const body = new URLSearchParams(mapped).toString();
+    try {
+      if (false) {
+        const blob = new Blob([body], { type: "application/x-www-form-urlencoded" });
+        navigator.sendBeacon(LEAD_WEBHOOK_URL, blob);
+      } else {
+        fetch(LEAD_WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body
+        }).catch(function () {});
+      }
+    } catch (err) {
+      // Fire-and-forget: UI continues either way
+    }
+  }
+
+  function money(n) {
+    return "$" + Math.round(n).toLocaleString("en-US");
+  }
+
+  function formatRange(lo, hi) {
+    return money(lo) + " – " + money(hi);
+  }
+
+  function computePrices() {
+    const base = PRICING.baseBySize[state.size];
+    const fuelAdj = PRICING.fuelAdjust[state.fuel] || 0;
+    const addonTotal = state.addOns.reduce(function (sum, key) {
+      return sum + (PRICING.addOns[key] || 0);
+    }, 0);
+
+    const result = {};
+    ["good", "better", "best"].forEach(function (tier) {
+      const pair = base[tier];
+      result[tier] = {
+        low: pair[0] + fuelAdj + addonTotal,
+        high: pair[1] + fuelAdj + addonTotal
+      };
+    });
+    return result;
+  }
+
+  function buildPayload() {
+    const prices = state.prices || computePrices();
+    return {
+      source: "Vector Services Furnace Estimator (Demo)",
+      createdAt: new Date().toISOString(),
+      contact: {
+        fullName: state.lead.fullName,
+        phone: state.lead.phone,
+        email: state.lead.email,
+        zip: state.lead.zip
+      },
+      answers: {
+        homeSize: state.size,
+        homeSizeLabel: PRICING.labels.sizes[state.size].label,
+        fuel: state.fuel,
+        fuelLabel: PRICING.labels.fuels[state.fuel].label,
+        situation: state.situation,
+        situationLabel: PRICING.labels.situations[state.situation].label,
+        addOns: state.addOns.slice(),
+        addOnLabels: state.addOns.map(function (k) { return PRICING.labels.addOns[k].label; })
+      },
+      estimate: {
+        currency: "USD",
+        note: "Demo example prices from Twin Cities market research — replace with Vector Services retail ranges",
+        good: prices.good,
+        better: prices.better,
+        best: prices.best,
+        goodLabel: formatRange(prices.good.low, prices.good.high),
+        betterLabel: formatRange(prices.better.low, prices.better.high),
+        bestLabel: formatRange(prices.best.low, prices.best.high)
+      }
+    };
+  }
+
+  function updateProgress() {
+    const wrap = $("#progressWrap");
+    if (state.step > 6) {
+      wrap.style.display = "none";
+      return;
+    }
+    wrap.style.display = "block";
+    const pct = Math.round((state.step / state.totalSteps) * 100);
+    $("#progressLabel").textContent = "Step " + state.step + " of " + state.totalSteps;
+    $("#progressPct").textContent = pct + "%";
+    $("#progressFill").style.width = pct + "%";
+  }
+
+  function showStep(n) {
+    state.step = n;
+    $$(".step").forEach(function (el) {
+      el.classList.toggle("active", Number(el.dataset.step) === n);
+    });
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function renderChoiceOptions(containerId, map, selectedKey, multi) {
+    const el = $("#" + containerId);
+    el.innerHTML = "";
+    Object.keys(map).forEach(function (key) {
+      const item = map[key];
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "option" + (multi
+        ? (state.addOns.indexOf(key) !== -1 ? " selected" : "")
+        : (selectedKey === key ? " selected" : ""));
+      btn.dataset.value = key;
+      btn.innerHTML =
+        '<span class="' + (multi ? "check" : "radio") + '"></span>' +
+        '<span class="label-wrap"><span class="label"></span><span class="sub"></span></span>';
+      btn.querySelector(".label").textContent = item.label;
+      btn.querySelector(".sub").textContent = item.sub || "";
+      el.appendChild(btn);
+    });
+  }
+
+  function bindSingleSelect(containerId, stateKey, nextBtnId) {
+    $("#" + containerId).addEventListener("click", function (e) {
+      const btn = e.target.closest(".option");
+      if (!btn) return;
+      state[stateKey] = btn.dataset.value;
+      $$("#" + containerId + " .option").forEach(function (o) {
+        o.classList.toggle("selected", o === btn);
+      });
+      if (nextBtnId) $("#" + nextBtnId).disabled = false;
+    });
+  }
+
+  function bindMultiSelect(containerId) {
+    $("#" + containerId).addEventListener("click", function (e) {
+      const btn = e.target.closest(".option");
+      if (!btn) return;
+      const key = btn.dataset.value;
+      const idx = state.addOns.indexOf(key);
+      if (idx === -1) {
+        state.addOns.push(key);
+        btn.classList.add("selected");
+      } else {
+        state.addOns.splice(idx, 1);
+        btn.classList.remove("selected");
+      }
+    });
+  }
+
+  function digitsOnly(s) {
+    return String(s || "").replace(/\D/g, "");
+  }
+
+  function validateLead() {
+    const name = $("#fullName").value.trim();
+    const phoneDigits = digitsOnly($("#phone").value);
+    const email = $("#email").value.trim();
+    const zip = $("#zip").value.trim();
+    let ok = true;
+
+    function setErr(id, show) {
+      const input = $("#" + id);
+      const err = $("#err-" + id);
+      input.classList.toggle("invalid", show);
+      err.classList.toggle("show", show);
+      if (show) ok = false;
+    }
+
+    setErr("fullName", name.length < 2);
+    setErr("phone", phoneDigits.length !== 10);
+    setErr("email", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    setErr("zip", !/^\d{5}(-\d{4})?$/.test(zip));
+
+    if (ok) {
+      state.lead = {
+        fullName: name,
+        phone: phoneDigits.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3"),
+        email: email,
+        zip: zip.slice(0, 5)
+      };
+    }
+    return ok;
+  }
+
+  function renderReveal() {
+    state.prices = computePrices();
+    const sizeLabel = PRICING.labels.sizes[state.size].label;
+    const fuelLabel = PRICING.labels.fuels[state.fuel].label;
+    const addonText = state.addOns.length
+      ? state.addOns.map(function (k) { return PRICING.labels.addOns[k].label; }).join(", ")
+      : "None selected";
+
+    $("#revealSummary").innerHTML =
+      "<strong>" + sizeLabel + "</strong> · " + fuelLabel +
+      "<br>Add-ons: " + addonText +
+      "<br><em>Example prices — not a formal quote</em>";
+
+    const cards = $("#tierCards");
+    cards.innerHTML = "";
+    ["good", "better", "best"].forEach(function (tier) {
+      const meta = PRICING.labels.tiers[tier];
+      const range = state.prices[tier];
+      const div = document.createElement("div");
+      div.className = "tier " + tier + (tier === "better" ? " recommended" : "");
+      div.innerHTML =
+        (tier === "better" ? '<span class="rec-pill">Most popular</span>' : "") +
+        '<span class="badge"></span>' +
+        "<h3></h3>" +
+        '<p class="spec"></p>' +
+        '<p class="price"></p>' +
+        '<p class="price-note">Installed retail range · Demo example</p>';
+      div.querySelector(".badge").textContent = meta.name;
+      div.querySelector("h3").textContent = meta.title;
+      div.querySelector(".spec").textContent = meta.spec;
+      div.querySelector(".price").textContent = formatRange(range.low, range.high);
+      cards.appendChild(div);
+    });
+  }
+
+  function goThanks() {
+    const payload = buildPayload();
+    state.lastPayload = payload;
+    const fields = buildWebhookFields(payload);
+    postLead(fields);
+
+    $("#thanksName").textContent = state.lead.fullName.split(" ")[0] || "there";
+    $("#thanksSummary").innerHTML =
+      "We’ll reach out at <strong>" + state.lead.phone + "</strong>" +
+      " · " + state.lead.email +
+      "<br>Estimate shown: Better " + payload.estimate.betterLabel +
+      " <span class=\"example-tag\">Demo prices</span>";
+    $("#payloadPreview").textContent = JSON.stringify(fields, null, 2);
+    showStep(7);
+  }
+
+  /* ----- Init UI ----- */
+  renderChoiceOptions("sizeOptions", PRICING.labels.sizes, state.size, false);
+  renderChoiceOptions("fuelOptions", PRICING.labels.fuels, state.fuel, false);
+  renderChoiceOptions("situationOptions", PRICING.labels.situations, state.situation, false);
+  renderChoiceOptions("addonOptions", PRICING.labels.addOns, null, true);
+
+  bindSingleSelect("sizeOptions", "size", "next-1");
+  bindSingleSelect("fuelOptions", "fuel", "next-2");
+  bindSingleSelect("situationOptions", "situation", "next-3");
+  bindMultiSelect("addonOptions");
+
+  $("#next-1").addEventListener("click", function () {
+    if (state.size) showStep(2);
+  });
+  $("#next-2").addEventListener("click", function () {
+    if (state.fuel) showStep(3);
+  });
+  $("#next-3").addEventListener("click", function () {
+    if (state.situation) showStep(4);
+  });
+  $("#next-4").addEventListener("click", function () {
+    showStep(5);
+  });
+
+  $("#leadForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!validateLead()) return;
+    renderReveal();
+    showStep(6);
+  });
+
+  $("#bookBtn").addEventListener("click", function () {
+    goThanks();
+  });
+
+  $("#restartBtn").addEventListener("click", function () {
+    state.size = null;
+    state.fuel = null;
+    state.situation = null;
+    state.addOns = [];
+    state.lead = { fullName: "", phone: "", email: "", zip: "" };
+    state.prices = null;
+    state.lastPayload = null;
+    $("#leadForm").reset();
+    $$(".field input").forEach(function (i) { i.classList.remove("invalid"); });
+    $$(".error").forEach(function (e) { e.classList.remove("show"); });
+    $("#next-1").disabled = true;
+    $("#next-2").disabled = true;
+    $("#next-3").disabled = true;
+    renderChoiceOptions("sizeOptions", PRICING.labels.sizes, null, false);
+    renderChoiceOptions("fuelOptions", PRICING.labels.fuels, null, false);
+    renderChoiceOptions("situationOptions", PRICING.labels.situations, null, false);
+    renderChoiceOptions("addonOptions", PRICING.labels.addOns, null, true);
+    showStep(1);
+  });
+
+  document.body.addEventListener("click", function (e) {
+    const back = e.target.closest("[data-back]");
+    if (!back) return;
+    showStep(Number(back.dataset.back));
+  });
+
+  // Light phone formatting as user types
+  $("#phone").addEventListener("input", function () {
+    const d = digitsOnly(this.value).slice(0, 10);
+    if (d.length <= 3) this.value = d;
+    else if (d.length <= 6) this.value = "(" + d.slice(0, 3) + ") " + d.slice(3);
+    else this.value = "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6);
+  });
+
+  updateProgress();
+  </script>
+</body>
+</html>
